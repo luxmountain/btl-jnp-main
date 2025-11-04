@@ -2,6 +2,10 @@
   "name": "voting-system",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "source/client",
+    "source/server"
+  ],
   "packageManager": "yarn@4.10.3",
   "scripts": {
     "client": "yarn --cwd source/client dev",
@@ -12,7 +16,7 @@
     "start:server": "yarn --cwd source/server start",
     "install:all": "yarn --cwd source/client install && yarn --cwd source/server install",
     "setup": "yarn install && yarn install:all",
-    "coding": "yarn install && yarn install:all && yarn dev"
+    "coding": "yarn setup && yarn dev"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
