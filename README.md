@@ -19,34 +19,39 @@
 
 ## 🧠 MÔ TẢ HỆ THỐNG
 
-Hệ thống voting realtime **đơn giản** cho các ngôn ngữ lập trình, cho phép nhiều thiết bị trong cùng mạng LAN kết nối và vote theo thời gian thực.
+Hệ thống bỏ phiếu trực tuyến theo thời gian thực cho các ngôn ngữ lập trình. Nhiều người dùng trong cùng mạng LAN có thể kết nối và bỏ phiếu đồng thời.
 
-- **Client (React + Material UI)**: Single Page Application để vote/unvote
-- **Server (Express + Socket.IO)**: Xử lý logic voting với realtime updates
-- **Storage**: In-memory (Arrays/Objects) - đơn giản, không cần database
+**Kiến trúc hệ thống:**
 
-**Các tính năng chính:**
+- **Client (React + Material UI)**: Giao diện web để vote và unvote
+- **Server (Express + Socket.IO)**: Xử lý logic voting và cập nhật realtime
+- **Storage**: Lưu trữ tạm thời trên RAM (dữ liệu sẽ mất khi tắt server)
 
-- ⚡ Vote/Unvote realtime với Socket.IO
+**Tính năng:**
 
-**Cấu trúc logic:**
+- ⚡ Cập nhật kết quả bỏ phiếu tức thì với Socket.IO
+- 🔄 Mỗi người chỉ vote được 1 lần
+- 📊 Hiển thị % và số lượng vote theo thời gian thực
+
+**Sơ đồ kết nối:**
 
 ```
 Client (React)  <--->  Socket.IO  <--->  Server (Express)
-   (Port 5173)      (Realtime)         (Port 5000)
+   (Port 3000)      (Realtime)         (Port 5000)
 ```
 
-> **Lưu ý:** Dữ liệu lưu trong memory, sẽ mất khi restart server.
+> **⚠️ Lưu ý:** Dữ liệu chỉ lưu trên RAM, khi restart server thì tất cả votes sẽ bị reset về 0.
 
 ---
 
 ## ⚙️ CÔNG NGHỆ SỬ DỤNG
 
-| Thành phần | Công nghệ                       | Ghi chú                |
-| ---------- | ------------------------------- | ---------------------- |
-| Client     | React 19 + Material UI + Vite   | SPA không router       |
-| Server     | Node.js + Express 5 + Socket.IO | Realtime bidirectional |
-| Storage    | In-Memory (Arrays/Objects/Map)  | Simple & fast          |
+| Thành phần     | Công nghệ                       | Vai trò                           |
+| -------------- | ------------------------------- | --------------------------------- |
+| **Client**     | React 19 + Material UI + Vite   | Giao diện web hiện đại, responsive |
+| **Server**     | Node.js + Express 5 + Socket.IO | Xử lý logic và realtime updates    |
+| **Lưu trữ**    | In-Memory (Map, Array)          | Lưu tạm trên RAM, nhanh và đơn giản |
+| **Giao tiếp**  | Socket.IO                       | Kết nối 2 chiều client ↔ server   |
 
 ---
 
@@ -55,7 +60,6 @@ Client (React)  <--->  Socket.IO  <--->  Server (Express)
 ### Yêu cầu hệ thống
 
 - Node.js v18 trở lên
-- MongoDB (local hoặc cloud)
 - Yarn v4
 
 ### 1. Clone repository
@@ -72,71 +76,136 @@ yarn install
 yarn install:all
 ```
 
-### 3. Chạy cả client và server (Realtime)
+### 3. Chạy cả client và server cùng lúc
 
 ```bash
 yarn dev
 ```
 
-Server sẽ hiển thị:
+**Kết quả hiển thị trên terminal:**
 
+Server:
 ```
 Server running on:
   - Local:   http://localhost:5000
   - Network: http://<Your-LAN-IP>:5000
 ```
 
-Client sẽ hiển thị:
-
+Client:
 ```
 VITE ready
   - Local: http://localhost:3000
   - Network: http://<Your-LAN-IP>:3000
 ```
 
-### 4. Truy cập và sử dụng
+### 4. Tìm địa chỉ IP mạng LAN
 
-- Mở browser: `http://<Your-LAN-IP>:3000`
-- Click **Vote** cho ngôn ngữ yêu thích
-- Xem kết quả **realtime**
-- Click **Unvote** để hủy vote
-- Mở nhiều tab/thiết bị khác để test realtime!
+> **💡 Tip:** Nếu địa chỉ IP hiển thị trên terminal của client và server giống nhau thì bỏ qua bước này!
+
+**Cách 1: Xem trên terminal (Nhanh nhất)**
+
+Khi chạy `yarn dev`, địa chỉ IP đã tự động hiển thị:
+
+```
+Server running on:
+  - Network: http://192.168.1.36:5000  ← Đây là địa chỉ IP mạng LAN
+```
+
+**Cách 2: Tìm thủ công**
+
+**Windows:**
+```powershell
+ipconfig
+```
+Tìm dòng **IPv4 Address** trong mục:
+- **Wireless LAN adapter Wi-Fi** (nếu dùng WiFi)
+- **Ethernet adapter** (nếu dùng dây mạng)
+
+Ví dụ: `192.168.1.36`
+
+**macOS/Linux:**
+```bash
+ifconfig | grep "inet " | grep -v 127.0.0.1
+```
+
+Hoặc:
+```bash
+ip addr show
+```
+
+### 5. Truy cập và sử dụng hệ thống
+
+**Bước 1: Mở trình duyệt**
+- Truy cập: `http://<Your-LAN-IP>:3000`
+- Ví dụ: `http://192.168.1.36:3000`
+
+**Bước 2: Bỏ phiếu**
+- Click nút **Vote** cho ngôn ngữ bạn yêu thích
+- Kết quả cập nhật **tức thì** trên tất cả thiết bị
+
+**Bước 3: Hủy phiếu (nếu muốn)**
+- Click nút **Bỏ vote** để hủy
+
+**Bước 4: Test với nhiều thiết bị**
+- Mở nhiều tab trên cùng máy HOẶC
+- Mở trên điện thoại/máy tính khác trong cùng mạng WiFi
+- Quan sát kết quả cập nhật đồng bộ!
+
+> **💡 Lưu ý quan trọng:**
+>
+> - ✅ Client **tự động kết nối** đến server qua địa chỉ IP hiện tại
+> - ✅ Truy cập `http://192.168.1.36:3000` → tự động kết nối `http://192.168.1.36:5000`
+> - ❌ **KHÔNG dùng** `localhost` khi muốn nhiều thiết bị cùng truy cập
+> - ✅ Đảm bảo tất cả thiết bị kết nối **cùng mạng WiFi/LAN**
+> - ⚠️ Nếu thiết bị khác không truy cập được: tắt Firewall hoặc cho phép port 3000 và 5000
+
 ---
 
-## 🔗 SOCKET.IO EVENTS
+## 🔗 API DOCUMENTATION
 
-### Client → Server
+### Socket.IO Events (Giao tiếp Realtime)
 
-| Event    | Params       | Mô tả             |
-| -------- | ------------ | ----------------- |
-| `vote`   | `languageId` | Vote cho ngôn ngữ |
-| `unvote` | —            | Hủy vote hiện tại |
+**📤 Client gửi lên Server:**
 
-### Server → Client
+| Event    | Tham số      | Mô tả                             |
+| -------- | ------------ | --------------------------------- |
+| `vote`   | `languageId` | Bỏ phiếu cho ngôn ngữ theo ID     |
+| `unvote` | —            | Hủy phiếu bầu hiện tại            |
 
-| Event         | Data          | Mô tả                             |
-| ------------- | ------------- | --------------------------------- |
-| `initialData` | `languages[]` | Gửi data ban đầu khi connect      |
-| `updateVotes` | `languages[]` | Broadcast updates đến ALL clients |
-| `error`       | `{message}`   | Gửi error message                 |
+**📥 Server gửi xuống Client:**
 
-### REST API
+| Event         | Dữ liệu       | Mô tả                                      |
+| ------------- | ------------- | ------------------------------------------ |
+| `initialData` | `languages[]` | Gửi danh sách ngôn ngữ khi user kết nối    |
+| `updateVotes` | `languages[]` | Cập nhật số votes cho TẤT CẢ client        |
+| `error`       | `{message}`   | Thông báo lỗi (ví dụ: đã vote rồi)         |
 
-| Endpoint         | Method | Output             | Mô tả                  |
-| ---------------- | ------ | ------------------ | ---------------------- |
-| `/api/languages` | GET    | Array of languages | Lấy danh sách ngôn ngữ |
+### REST API Endpoints (HTTP)
 
----
+| Endpoint         | Protocol | Method | Input       | Output              | Mô tả                               |
+| ---------------- | -------- | ------ | ----------- | ------------------- | ----------------------------------- |
+| `/api/languages` | HTTP     | GET    | Không có    | Mảng danh sách      | Lấy tất cả ngôn ngữ và số votes     |
 
-## 📊 CẤU TRÚC UI
+**Ví dụ Response:**
 
-**Single Page Application - Không có router**
-
-- Header: Title + Total votes + Current vote
-- Grid Cards: 6 cards cho 6 ngôn ngữ
-- Progress Bars: Hiển thị % votes realtime
-- Vote/Unvote Buttons: Material UI buttons với icons
-- Snackbar: Notifications cho mọi action
+```json
+[
+  {
+    "id": 1,
+    "name": "JavaScript",
+    "votes": 5,
+    "color": "#F7DF1E",
+    "icon": "🟨"
+  },
+  { 
+    "id": 2, 
+    "name": "Python", 
+    "votes": 3, 
+    "color": "#3776AB", 
+    "icon": "🐍" 
+  }
+]
+```
 
 ---
 
@@ -166,22 +235,25 @@ mid-project-525445519/
 
 ## 🧩 HƯỚNG PHÁT TRIỂN THÊM
 
-- [x] **Cơ bản**: Vote/Unvote realtime
-- [x] **Socket.IO**: Bidirectional communication
-- [x] **Material UI**: Modern & responsive
-- [x] **Single Page**: No router needed
-- [x] **6 Languages**: JavaScript, Python, Java, C++, Go, Rust
-- [ ] **Database**: MongoDB/PostgreSQL cho persistent data
-- [ ] **Authentication**: Login/Register users
-- [ ] **Admin Panel**: Reset votes, manage languages
-- [ ] **Charts**: Visualization với Chart.js
-- [ ] **Export**: Results to Excel/PDF
-- [ ] **Themes**: Dark/Light mode
-- [ ] **Deploy**: Vercel (client) + Railway (server)
+**✅ Đã hoàn thành:**
+- Vote/Unvote theo thời gian thực
+- Giao tiếp 2 chiều với Socket.IO
+- Giao diện hiện đại với Material UI
+- Tự động phát hiện địa chỉ mạng LAN
+- Hỗ trợ 8 ngôn ngữ lập trình
+
+**📋 Kế hoạch phát triển:**
+- [ ] **Cơ sở dữ liệu**: Lưu trữ vĩnh viễn với MongoDB/PostgreSQL
+- [ ] **Xác thực người dùng**: Đăng ký/Đăng nhập
+- [ ] **Trang quản trị**: Reset votes, quản lý ngôn ngữ
+- [ ] **Biểu đồ**: Trực quan hóa với Chart.js
+- [ ] **Xuất báo cáo**: Export kết quả ra Excel/PDF
+- [ ] **Giao diện**: Chế độ Dark/Light mode
+- [ ] **Triển khai**: Deploy lên Vercel (client) + Railway (server)
 
 ---
 
-## � TÀI LIỆU
+## 📚 TÀI LIỆU THAM KHẢO
 
 - [Socket.IO Docs](https://socket.io/docs/v4/)
 - [Material UI Docs](https://mui.com/)
