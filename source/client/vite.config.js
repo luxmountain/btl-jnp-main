@@ -9,7 +9,7 @@ export default defineConfig({
     port: 3000,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: ['react', 'react-dom'],
     exclude: []
   },
   resolve: {
