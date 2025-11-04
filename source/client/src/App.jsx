@@ -44,7 +44,7 @@ function App() {
     const ws = new WebSocket(SERVER_URL);
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
+      console.log('WebSocket connected!');
     };
 
     ws.onmessage = (event) => {
