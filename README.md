@@ -69,17 +69,10 @@ git clone https://github.com/jnp2018/mid-project-525445519.git
 cd mid-project-525445519
 ```
 
-### 2. Cài đặt dependencies cả client và server
+### 2. Chạy cả client và server cùng lúc
 
 ```bash
-yarn install
-yarn install:all
-```
-
-### 3. Chạy cả client và server cùng lúc
-
-```bash
-yarn dev
+yarn coding
 ```
 
 **Kết quả hiển thị trên terminal:**
@@ -98,7 +91,7 @@ VITE ready
   - Network: http://<Your-LAN-IP>:3000
 ```
 
-### 4. Tìm địa chỉ IP mạng LAN
+### 3. Tìm địa chỉ IP mạng LAN
 
 > **💡 Tip:** Nếu địa chỉ IP hiển thị trên terminal của client và server giống nhau thì bỏ qua bước này!
 
@@ -133,7 +126,7 @@ Hoặc:
 ip addr show
 ```
 
-### 5. Truy cập và sử dụng hệ thống
+### 4. Truy cập và sử dụng hệ thống
 
 **Bước 1: Mở trình duyệt**
 - Truy cập: `http://<Your-LAN-IP>:3000`
