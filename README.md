@@ -83,7 +83,7 @@ Server sẽ hiển thị:
 ```
 Server running on:
   - Local:   http://localhost:5000
-  - Network: http://192.168.1.36:5000
+  - Network: http://<Your-LAN-IP>:5000
 ```
 
 Client sẽ hiển thị:
@@ -91,19 +91,16 @@ Client sẽ hiển thị:
 ```
 VITE ready
   - Local: http://localhost:3000
-  - Network: http://192.168.1.36:3000
+  - Network: http://<Your-LAN-IP>:3000
 ```
 
 ### 4. Truy cập và sử dụng
 
-- Mở browser: `http://192.168.1.36:3000`
+- Mở browser: `http://<Your-LAN-IP>:3000`
 - Click **Vote** cho ngôn ngữ yêu thích
 - Xem kết quả **realtime**
 - Click **Unvote** để hủy vote
 - Mở nhiều tab/thiết bị khác để test realtime!
-
-> **Note:** Server URL được config tự động trong code (`http://localhost:3000`)
-
 ---
 
 ## 🔗 SOCKET.IO EVENTS
@@ -123,7 +120,7 @@ VITE ready
 | `updateVotes` | `languages[]` | Broadcast updates đến ALL clients |
 | `error`       | `{message}`   | Gửi error message                 |
 
-### REST API (Optional)
+### REST API
 
 | Endpoint         | Method | Output             | Mô tả                  |
 | ---------------- | ------ | ------------------ | ---------------------- |

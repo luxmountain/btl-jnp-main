@@ -17,7 +17,15 @@ import {
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
-const SERVER_URL = "http://192.168.1.36:5000";
+const getServerURL = () => {
+  const currentHost = window.location.hostname;
+  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+    return `http://${currentHost}:5000`;
+  }
+  return "http://localhost:5000";
+};
+
+const SERVER_URL = getServerURL();
 
 function App() {
   const [socket, setSocket] = useState(null);
@@ -112,8 +120,9 @@ function App() {
             />
             {myVote && (
               <Chip
-                label={`Bạn đã vote: ${languages.find((l) => l.id === myVote)?.name
-                  }`}
+                label={`Bạn đã vote: ${
+                  languages.find((l) => l.id === myVote)?.name
+                }`}
                 color="success"
                 size="large"
                 onDelete={handleUnvote}
@@ -138,7 +147,9 @@ function App() {
                     transition: "0.3s",
                     borderRadius: 3,
                     background: "white",
-                    border: isMine ? `3px solid ${lang.color}` : "1px solid #e5e7eb",
+                    border: isMine
+                      ? `3px solid ${lang.color}`
+                      : "1px solid #e5e7eb",
                     boxShadow: isMine
                       ? "0 6px 25px rgba(0,0,0,0.2)"
                       : "0 4px 15px rgba(0,0,0,0.08)",
