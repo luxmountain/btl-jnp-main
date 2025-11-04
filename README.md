@@ -46,12 +46,12 @@ Client (React)  <--->  WebSocket  <--->  Server (Express)
 
 ## ⚙️ CÔNG NGHỆ SỬ DỤNG
 
-| Thành phần     | Công nghệ                       | Vai trò                           |
-| -------------- | ------------------------------- | --------------------------------- |
-| **Client**     | React 19 + Material UI + Vite   | Giao diện web hiện đại, responsive |
-| **Server**     | Node.js + Express 5 + WebSocket | Xử lý logic và realtime updates    |
-| **Lưu trữ**    | In-Memory (Map, Array)          | Lưu tạm trên RAM, nhanh và đơn giản |
-| **Giao tiếp**  | WebSocket (ws)                  | Kết nối 2 chiều client ↔ server   |
+| Thành phần    | Công nghệ                       | Vai trò                             |
+| ------------- | ------------------------------- | ----------------------------------- |
+| **Client**    | React 19 + Material UI + Vite   | Giao diện web hiện đại, responsive  |
+| **Server**    | Node.js + Express 5 + WebSocket | Xử lý logic và realtime updates     |
+| **Lưu trữ**   | In-Memory (Map, Array)          | Lưu tạm trên RAM, nhanh và đơn giản |
+| **Giao tiếp** | WebSocket (ws)                  | Kết nối 2 chiều client ↔ server     |
 
 ---
 
@@ -69,15 +69,22 @@ git clone https://github.com/jnp2018/mid-project-525445519.git
 cd mid-project-525445519
 ```
 
-### 2. Chạy cả client và server cùng lúc
+### 2. Cài đặt dependencies cả client và server
 
 ```bash
-yarn coding
+yarn install
+```
+
+### 3. Chạy cả client và server cùng lúc
+
+```bash
+yarn dev
 ```
 
 **Kết quả hiển thị trên terminal:**
 
 Server:
+
 ```
 Server running on:
   - Local:   http://localhost:5000
@@ -85,13 +92,14 @@ Server running on:
 ```
 
 Client:
+
 ```
 VITE ready
   - Local: http://localhost:3000
   - Network: http://<Your-LAN-IP>:3000
 ```
 
-### 3. Tìm địa chỉ IP mạng LAN
+### 4. Tìm địa chỉ IP mạng LAN
 
 > **💡 Tip:** Nếu địa chỉ IP hiển thị trên terminal của client và server giống nhau thì bỏ qua bước này!
 
@@ -107,39 +115,48 @@ Server running on:
 **Cách 2: Tìm thủ công**
 
 **Windows:**
+
 ```powershell
 ipconfig
 ```
+
 Tìm dòng **IPv4 Address** trong mục:
+
 - **Wireless LAN adapter Wi-Fi** (nếu dùng WiFi)
 - **Ethernet adapter** (nếu dùng dây mạng)
 
 Ví dụ: `192.168.1.36`
 
 **macOS/Linux:**
+
 ```bash
 ifconfig | grep "inet " | grep -v 127.0.0.1
 ```
 
 Hoặc:
+
 ```bash
 ip addr show
 ```
 
-### 4. Truy cập và sử dụng hệ thống
+### 5. Truy cập và sử dụng hệ thống
 
 **Bước 1: Mở trình duyệt**
+
 - Truy cập: `http://<Your-LAN-IP>:3000`
 - Ví dụ: `http://192.168.1.36:3000`
 
 **Bước 2: Bỏ phiếu**
+
 - Click nút **Vote** cho ngôn ngữ bạn yêu thích
 - Kết quả cập nhật **tức thì** trên tất cả thiết bị
 
 **Bước 3: Hủy phiếu (nếu muốn)**
+
 - Click nút **Bỏ vote** để hủy
 
 **Bước 4: Test với nhiều thiết bị**
+
 - Mở nhiều tab trên cùng máy HOẶC
 - Mở trên điện thoại/máy tính khác trong cùng mạng WiFi
 - Quan sát kết quả cập nhật đồng bộ!
@@ -160,12 +177,13 @@ ip addr show
 
 **📤 Client gửi lên Server:**
 
-| Type     | Data         | Mô tả                             |
-| -------- | ------------ | --------------------------------- |
-| `vote`   | `languageId` | Bỏ phiếu cho ngôn ngữ theo ID     |
-| `unvote` | —            | Hủy phiếu bầu hiện tại            |
+| Type     | Data         | Mô tả                         |
+| -------- | ------------ | ----------------------------- |
+| `vote`   | `languageId` | Bỏ phiếu cho ngôn ngữ theo ID |
+| `unvote` | —            | Hủy phiếu bầu hiện tại        |
 
 **Format message gửi:**
+
 ```json
 {
   "type": "vote",
@@ -175,13 +193,14 @@ ip addr show
 
 **📥 Server gửi xuống Client:**
 
-| Type          | Data          | Mô tả                                      |
-| ------------- | ------------- | ------------------------------------------ |
-| `initialData` | `languages[]` | Gửi danh sách ngôn ngữ khi user kết nối    |
-| `updateVotes` | `languages[]` | Cập nhật số votes cho TẤT CẢ client        |
-| `error`       | `{message}`   | Thông báo lỗi (ví dụ: đã vote rồi)         |
+| Type          | Data          | Mô tả                                   |
+| ------------- | ------------- | --------------------------------------- |
+| `initialData` | `languages[]` | Gửi danh sách ngôn ngữ khi user kết nối |
+| `updateVotes` | `languages[]` | Cập nhật số votes cho TẤT CẢ client     |
+| `error`       | `{message}`   | Thông báo lỗi (ví dụ: đã vote rồi)      |
 
 **Format message nhận:**
+
 ```json
 {
   "type": "updateVotes",
@@ -191,9 +210,9 @@ ip addr show
 
 ### REST API Endpoints (HTTP)
 
-| Endpoint         | Protocol | Method | Input       | Output              | Mô tả                               |
-| ---------------- | -------- | ------ | ----------- | ------------------- | ----------------------------------- |
-| `/api/languages` | HTTP     | GET    | Không có    | Mảng danh sách      | Lấy tất cả ngôn ngữ và số votes     |
+| Endpoint         | Protocol | Method | Input    | Output         | Mô tả                           |
+| ---------------- | -------- | ------ | -------- | -------------- | ------------------------------- |
+| `/api/languages` | HTTP     | GET    | Không có | Mảng danh sách | Lấy tất cả ngôn ngữ và số votes |
 
 **Ví dụ Response:**
 
@@ -206,12 +225,12 @@ ip addr show
     "color": "#F7DF1E",
     "icon": "🟨"
   },
-  { 
-    "id": 2, 
-    "name": "Python", 
-    "votes": 3, 
-    "color": "#3776AB", 
-    "icon": "🐍" 
+  {
+    "id": 2,
+    "name": "Python",
+    "votes": 3,
+    "color": "#3776AB",
+    "icon": "🐍"
   }
 ]
 ```
@@ -245,6 +264,7 @@ mid-project-525445519/
 ## 🧩 HƯỚNG PHÁT TRIỂN THÊM
 
 **✅ Đã hoàn thành:**
+
 - Vote/Unvote theo thời gian thực
 - Giao tiếp 2 chiều với WebSocket
 - Giao diện hiện đại với Material UI
@@ -252,6 +272,7 @@ mid-project-525445519/
 - Hỗ trợ 8 ngôn ngữ lập trình
 
 **📋 Kế hoạch phát triển:**
+
 - [ ] **Cơ sở dữ liệu**: Lưu trữ vĩnh viễn với MongoDB/PostgreSQL
 - [ ] **Xác thực người dùng**: Đăng ký/Đăng nhập
 - [ ] **Trang quản trị**: Reset votes, quản lý ngôn ngữ
