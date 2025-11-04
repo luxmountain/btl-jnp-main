@@ -16,6 +16,7 @@ import {
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
+// Auto detect server URL based on environment
 const getServerURL = () => {
   const currentHost = window.location.hostname;
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -44,7 +45,7 @@ function App() {
     const ws = new WebSocket(SERVER_URL);
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
+      console.log('WebSocket connected!');
     };
 
     ws.onmessage = (event) => {
