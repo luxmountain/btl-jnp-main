@@ -6,11 +6,11 @@
   "scripts": {
     "client": "yarn --cwd source/client dev",
     "server": "yarn --cwd source/server dev",
-    "dev": "concurrently \"yarn server\" \"yarn client\"",
     "build": "yarn --cwd source/client build",
     "start:client": "yarn --cwd source/client preview",
     "start:server": "yarn --cwd source/server start",
-    "install:all": "yarn --cwd source/client install && yarn --cwd source/server install"
+    "install:all": "yarn --cwd source/client install && yarn --cwd source/server install",
+    "dev": "yarn install:all && concurrently \"yarn server\" \"yarn client\""
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
