@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
-const { Server } = require('socket.io');
+const WebSocket = require('ws');
 require('dotenv').config();
 
 const app = express();
@@ -10,14 +10,9 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-// Create HTTP server and Socket.IO
+// Create HTTP server and WebSocket server
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
+const wss = new WebSocket.Server({ server });
 
 // In-memory data storage - 6 ngôn ngữ lập trình
 let languages = [
@@ -31,8 +26,18 @@ let languages = [
   { id: 8, name: "Ruby", votes: 0, color: "#CC342D", icon: "💎" }       // Ruby viên ngọc
 ];
 
-// Map để lưu vote của mỗi socket (1 user chỉ vote 1 lần)
-let userVotes = new Map(); // socketId -> languageId
+// Map để lưu vote của mỗi client (1 user chỉ vote 1 lần)
+let userVotes = new Map(); // clientId -> languageId
+let clientIdCounter = 0;
+
+// Helper function để broadcast tới tất cả clients
+function broadcastToAll(data) {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(data));
+    }
+  });
+}
 
 // Get all languages
 app.get('/api/languages', (req, res) => {
@@ -43,50 +48,99 @@ app.get('/api/languages', (req, res) => {
   }
 });
 
-// Socket.IO connection
-io.on('connection', (socket) => {
-  console.log(`User connected: ${socket.id}`);
+// WebSocket connection
+wss.on('connection', (ws) => {
+  // Gán ID duy nhất cho mỗi client
+  const clientId = ++clientIdCounter;
+  ws.clientId = clientId;
+  
+  console.log(`User connected: ${clientId}`);
 
-  // Send current data when user connects
-  socket.emit('initialData', languages);
+  // Send initial data khi user kết nối
+  ws.send(JSON.stringify({
+    type: 'initialData',
+    data: languages
+  }));
 
-  // Vote for a language
-  socket.on('vote', (languageId) => {
+  // Nhận message từ client
+  ws.on('message', (message) => {
+    try {
+      const parsed = JSON.parse(message);
+      const { type, data } = parsed;
+
+      switch (type) {
+        case 'vote':
+          handleVote(ws, data);
+          break;
+        case 'unvote':
+          handleUnvote(ws);
+          break;
+        default:
+          ws.send(JSON.stringify({
+            type: 'error',
+            data: { message: 'Unknown message type' }
+          }));
+      }
+    } catch (error) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        data: { message: 'Invalid message format' }
+      }));
+    }
+  });
+
+  // Handle vote
+  function handleVote(ws, languageId) {
     try {
       // Check if user already voted
-      const existingVote = userVotes.get(socket.id);
+      const existingVote = userVotes.get(ws.clientId);
       if (existingVote) {
-        socket.emit('error', { message: 'Bạn đã vote rồi!' });
+        ws.send(JSON.stringify({
+          type: 'error',
+          data: { message: 'Bạn đã vote rồi!' }
+        }));
         return;
       }
 
       // Find language
       const language = languages.find(l => l.id === languageId);
       if (!language) {
-        socket.emit('error', { message: 'Ngôn ngữ không tồn tại!' });
+        ws.send(JSON.stringify({
+          type: 'error',
+          data: { message: 'Ngôn ngữ không tồn tại!' }
+        }));
         return;
       }
 
       // Record vote
-      userVotes.set(socket.id, languageId);
+      userVotes.set(ws.clientId, languageId);
       language.votes += 1;
 
       // Broadcast updated data to all clients
-      io.emit('updateVotes', languages);
+      broadcastToAll({
+        type: 'updateVotes',
+        data: languages
+      });
 
-      console.log(`User ${socket.id} voted for ${language.name}`);
+      console.log(`User ${ws.clientId} voted for ${language.name}`);
     } catch (error) {
-      socket.emit('error', { message: 'Lỗi khi vote', error: error.message });
+      ws.send(JSON.stringify({
+        type: 'error',
+        data: { message: 'Lỗi khi vote', error: error.message }
+      }));
     }
-  });
+  }
 
-  // Unvote
-  socket.on('unvote', () => {
+  // Handle unvote
+  function handleUnvote(ws) {
     try {
-      const languageId = userVotes.get(socket.id);
+      const languageId = userVotes.get(ws.clientId);
 
       if (!languageId) {
-        socket.emit('error', { message: 'Bạn chưa vote!' });
+        ws.send(JSON.stringify({
+          type: 'error',
+          data: { message: 'Bạn chưa vote!' }
+        }));
         return;
       }
 
@@ -98,20 +152,32 @@ io.on('connection', (socket) => {
       }
 
       // Remove vote record
-      userVotes.delete(socket.id);
+      userVotes.delete(ws.clientId);
 
       // Broadcast updated data to all clients
-      io.emit('updateVotes', languages);
+      broadcastToAll({
+        type: 'updateVotes',
+        data: languages
+      });
 
-      console.log(`User ${socket.id} unvoted`);
+      console.log(`User ${ws.clientId} unvoted`);
     } catch (error) {
-      socket.emit('error', { message: 'Lỗi khi unvote', error: error.message });
+      ws.send(JSON.stringify({
+        type: 'error',
+        data: { message: 'Lỗi khi unvote', error: error.message }
+      }));
     }
+  }
+
+  // Handle disconnect
+  ws.on('close', () => {
+    console.log(`User disconnected: ${ws.clientId}`);
+    // Optional: Auto unvote when disconnect
+    // handleUnvote(ws);
   });
 
-  // Disconnect
-  socket.on('disconnect', () => {
-    console.log(`User disconnected: ${socket.id}`);
+  ws.on('error', (error) => {
+    console.error(`WebSocket error for client ${ws.clientId}:`, error);
   });
 });
 

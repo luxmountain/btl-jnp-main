@@ -24,19 +24,19 @@ Hệ thống bỏ phiếu trực tuyến theo thời gian thực cho các ngôn 
 **Kiến trúc hệ thống:**
 
 - **Client (React + Material UI)**: Giao diện web để vote và unvote
-- **Server (Express + Socket.IO)**: Xử lý logic voting và cập nhật realtime
+- **Server (Express + WebSocket)**: Xử lý logic voting và cập nhật realtime
 - **Storage**: Lưu trữ tạm thời trên RAM (dữ liệu sẽ mất khi tắt server)
 
 **Tính năng:**
 
-- ⚡ Cập nhật kết quả bỏ phiếu tức thì với Socket.IO
+- ⚡ Cập nhật kết quả bỏ phiếu tức thì với WebSocket
 - 🔄 Mỗi người chỉ vote được 1 lần
 - 📊 Hiển thị % và số lượng vote theo thời gian thực
 
 **Sơ đồ kết nối:**
 
 ```
-Client (React)  <--->  Socket.IO  <--->  Server (Express)
+Client (React)  <--->  WebSocket  <--->  Server (Express)
    (Port 3000)      (Realtime)         (Port 5000)
 ```
 
@@ -49,9 +49,9 @@ Client (React)  <--->  Socket.IO  <--->  Server (Express)
 | Thành phần     | Công nghệ                       | Vai trò                           |
 | -------------- | ------------------------------- | --------------------------------- |
 | **Client**     | React 19 + Material UI + Vite   | Giao diện web hiện đại, responsive |
-| **Server**     | Node.js + Express 5 + Socket.IO | Xử lý logic và realtime updates    |
+| **Server**     | Node.js + Express 5 + WebSocket | Xử lý logic và realtime updates    |
 | **Lưu trữ**    | In-Memory (Map, Array)          | Lưu tạm trên RAM, nhanh và đơn giản |
-| **Giao tiếp**  | Socket.IO                       | Kết nối 2 chiều client ↔ server   |
+| **Giao tiếp**  | WebSocket (ws)                  | Kết nối 2 chiều client ↔ server   |
 
 ---
 
@@ -163,22 +163,38 @@ ip addr show
 
 ## 🔗 API DOCUMENTATION
 
-### Socket.IO Events (Giao tiếp Realtime)
+### WebSocket Messages (Giao tiếp Realtime)
 
 **📤 Client gửi lên Server:**
 
-| Event    | Tham số      | Mô tả                             |
+| Type     | Data         | Mô tả                             |
 | -------- | ------------ | --------------------------------- |
 | `vote`   | `languageId` | Bỏ phiếu cho ngôn ngữ theo ID     |
 | `unvote` | —            | Hủy phiếu bầu hiện tại            |
 
+**Format message gửi:**
+```json
+{
+  "type": "vote",
+  "data": 1
+}
+```
+
 **📥 Server gửi xuống Client:**
 
-| Event         | Dữ liệu       | Mô tả                                      |
+| Type          | Data          | Mô tả                                      |
 | ------------- | ------------- | ------------------------------------------ |
 | `initialData` | `languages[]` | Gửi danh sách ngôn ngữ khi user kết nối    |
 | `updateVotes` | `languages[]` | Cập nhật số votes cho TẤT CẢ client        |
 | `error`       | `{message}`   | Thông báo lỗi (ví dụ: đã vote rồi)         |
+
+**Format message nhận:**
+```json
+{
+  "type": "updateVotes",
+  "data": [...]
+}
+```
 
 ### REST API Endpoints (HTTP)
 
@@ -237,7 +253,7 @@ mid-project-525445519/
 
 **✅ Đã hoàn thành:**
 - Vote/Unvote theo thời gian thực
-- Giao tiếp 2 chiều với Socket.IO
+- Giao tiếp 2 chiều với WebSocket
 - Giao diện hiện đại với Material UI
 - Tự động phát hiện địa chỉ mạng LAN
 - Hỗ trợ 8 ngôn ngữ lập trình
@@ -255,7 +271,8 @@ mid-project-525445519/
 
 ## 📚 TÀI LIỆU THAM KHẢO
 
-- [Socket.IO Docs](https://socket.io/docs/v4/)
+- [WebSocket API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+- [ws - Node.js WebSocket Library](https://github.com/websockets/ws)
 - [Material UI Docs](https://mui.com/)
 - [React Docs](https://react.dev/)
 - [Node.js Docs](https://nodejs.org/en/docs)

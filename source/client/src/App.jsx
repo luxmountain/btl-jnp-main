@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { io } from "socket.io-client";
 import {
   Container,
   Typography,
@@ -19,10 +18,12 @@ import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
 const getServerURL = () => {
   const currentHost = window.location.hostname;
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  
   if (currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
-    return `http://${currentHost}:5000`;
+    return `${protocol}//${currentHost}:5000`;
   }
-  return "http://localhost:5000";
+  return "ws://localhost:5000";
 };
 
 const SERVER_URL = getServerURL();
@@ -39,29 +40,66 @@ function App() {
   });
 
   useEffect(() => {
-    const newSocket = io(SERVER_URL);
-    setSocket(newSocket);
+    // Tạo WebSocket connection
+    const ws = new WebSocket(SERVER_URL);
 
-    newSocket.on("initialData", (data) => {
-      setLanguages(data);
-      setTotalVotes(data.reduce((sum, l) => sum + l.votes, 0));
-    });
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+    };
 
-    newSocket.on("updateVotes", (data) => {
-      setLanguages(data);
-      setTotalVotes(data.reduce((sum, l) => sum + l.votes, 0));
-    });
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        const { type, data } = message;
 
-    newSocket.on("error", (data) => {
-      setSnackbar({ open: true, message: data.message, severity: "error" });
-    });
+        switch (type) {
+          case 'initialData':
+            setLanguages(data);
+            setTotalVotes(data.reduce((sum, l) => sum + l.votes, 0));
+            break;
+          
+          case 'updateVotes':
+            setLanguages(data);
+            setTotalVotes(data.reduce((sum, l) => sum + l.votes, 0));
+            break;
+          
+          case 'error':
+            setSnackbar({ open: true, message: data.message, severity: "error" });
+            break;
+          
+          default:
+            console.warn('Unknown message type:', type);
+        }
+      } catch (error) {
+        console.error('Error parsing message:', error);
+      }
+    };
 
-    return () => newSocket.close();
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setSnackbar({ open: true, message: "Lỗi kết nối WebSocket", severity: "error" });
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    setSocket(ws);
+
+    // Cleanup khi component unmount
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
   }, []);
 
   const handleVote = (id) => {
-    if (socket && !myVote) {
-      socket.emit("vote", id);
+    if (socket && socket.readyState === WebSocket.OPEN && !myVote) {
+      socket.send(JSON.stringify({
+        type: 'vote',
+        data: id
+      }));
       setMyVote(id);
       const lang = languages.find((l) => l.id === id);
       setSnackbar({
@@ -73,8 +111,10 @@ function App() {
   };
 
   const handleUnvote = () => {
-    if (socket && myVote) {
-      socket.emit("unvote");
+    if (socket && socket.readyState === WebSocket.OPEN && myVote) {
+      socket.send(JSON.stringify({
+        type: 'unvote'
+      }));
       setMyVote(null);
       setSnackbar({ open: true, message: "Đã hủy vote!", severity: "info" });
     }
